@@ -100,14 +100,33 @@ class ThaiVectorStoreManager:
         
         print(f"🔄 กำลังเพิ่ม {len(documents)} เอกสารลงใน vector store...")
         
+        # กรองเอกสารที่ซ้ำกันออก (deduplication ก่อน embed)
+        unique_docs = []
+        seen_contents = set()
+        
+        for doc in documents:
+            # ใช้ content ทั้งหมดเป็น signature
+            content_hash = hash(doc.page_content.strip())
+            if content_hash not in seen_contents:
+                unique_docs.append(doc)
+                seen_contents.add(content_hash)
+            else:
+                print(f"  ⏭️ ข้าม chunk ที่ซ้ำ (hash: {content_hash})")
+        
+        print(f"  ✂️ กรองแล้ว: {len(documents)} → {len(unique_docs)} เอกสาร (ลบซ้ำ {len(documents) - len(unique_docs)} ชิ้น)")
+        
+        if not unique_docs:
+            print("⚠️ ไม่มีเอกสารใหม่หลังกรอง")
+            return
+        
         if self.vector_store is None:
             # สร้าง vector store ใหม่
-            self.vector_store = FAISS.from_documents(documents, self.embeddings)
-            self.documents = documents.copy()
+            self.vector_store = FAISS.from_documents(unique_docs, self.embeddings)
+            self.documents = unique_docs.copy()
         else:
             # เพิ่มเอกสารลงใน vector store ที่มีอยู่
-            self.vector_store.add_documents(documents)
-            self.documents.extend(documents)
+            self.vector_store.add_documents(unique_docs)
+            self.documents.extend(unique_docs)
         
         print(f"✅ เพิ่มเอกสารเสร็จสิ้น รวม {len(self.documents)} เอกสาร")
     

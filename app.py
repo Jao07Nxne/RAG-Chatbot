@@ -27,86 +27,337 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# CSS สำหรับปรับแต่งหน้าเว็บ
+# 🎨 CSS สำหรับปรับแต่งหน้าเว็บให้สวยงาม
 st.markdown("""
 <style>
+    /* ===== GLOBAL STYLES ===== */
+    @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap');
+    
+    * {
+        font-family: 'Sarabun', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    .main {
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    }
+    
+    /* ===== HEADER ===== */
     .main-header {
-        font-size: 2.5rem;
+        font-size: 3rem;
+        font-weight: 700;
         color: #ffffff;
         text-align: center;
-        padding: 1rem 0;
-        border-bottom: 2px solid #444444;
+        padding: 2rem 1rem;
         margin-bottom: 2rem;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border-radius: 10px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        position: relative;
+        overflow: hidden;
     }
     
+    .main-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+        transform: rotate(45deg);
+        animation: shine 3s infinite;
+    }
+    
+    @keyframes shine {
+        0% { transform: translateX(-100%) rotate(45deg); }
+        100% { transform: translateX(100%) rotate(45deg); }
+    }
+    
+    /* ===== SIDEBAR ===== */
+    [data-testid="stSidebar"] {
+        background: linear-gradient(180deg, #1e3a5f 0%, #2d4a6f 100%);
+        border-right: 2px solid #667eea;
+    }
+    
+    [data-testid="stSidebar"] h1, 
+    [data-testid="stSidebar"] h2, 
+    [data-testid="stSidebar"] h3 {
+        color: #ffd93d !important;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+    
+    /* ===== CHAT CONTAINER ===== */
     .chat-container {
-        background-color: #2d3748;
-        border-radius: 15px;
-        padding: 1.5rem;
-        margin: 1rem 0;
+        background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+        border-radius: 20px;
+        padding: 2rem;
+        margin: 1.5rem 0;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(102, 126, 234, 0.2);
     }
     
+    /* ===== CHAT MESSAGES ===== */
     .chat-message {
-        padding: 1.2rem;
-        border-radius: 15px;
-        margin: 1rem 0;
-        max-width: 85%;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        line-height: 1.6;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        padding: 1.5rem;
+        border-radius: 20px;
+        margin: 1.5rem 0;
+        max-width: 80%;
+        line-height: 1.8;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        animation: slideIn 0.3s ease-out;
+        position: relative;
     }
     
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    /* ===== USER MESSAGE ===== */
     .user-message {
-        background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+        background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 50%, #ff8787 100%);
         color: white;
         margin-left: auto;
-        position: relative;
+        border-bottom-right-radius: 5px;
+        box-shadow: 0 8px 20px rgba(255, 107, 107, 0.4);
     }
     
     .user-message::before {
         content: "👤";
         position: absolute;
-        left: -2.5rem;
+        right: -3rem;
         top: 0.5rem;
-        background-color: #ff6b6b;
+        background: linear-gradient(135deg, #ff6b6b, #ff8787);
         border-radius: 50%;
-        width: 2rem;
-        height: 2rem;
+        width: 2.5rem;
+        height: 2.5rem;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 1rem;
+        font-size: 1.2rem;
+        box-shadow: 0 4px 12px rgba(255, 107, 107, 0.5);
     }
     
+    /* ===== BOT MESSAGE ===== */
     .bot-message {
-        background: linear-gradient(135deg, #ffd93d, #ff9500);
-        color: #2d3748;
+        background: linear-gradient(135deg, #ffd93d 0%, #ffb700 50%, #ffe66d 100%);
+        color: #1a202c;
         margin-right: auto;
-        position: relative;
+        border-bottom-left-radius: 5px;
+        box-shadow: 0 8px 20px rgba(255, 217, 61, 0.4);
     }
     
     .bot-message::before {
         content: "🤖";
         position: absolute;
-        left: -2.5rem;
+        left: -3rem;
         top: 0.5rem;
-        background-color: #ffd93d;
+        background: linear-gradient(135deg, #ffd93d, #ffe66d);
         border-radius: 50%;
-        width: 2rem;
-        height: 2rem;
+        width: 2.5rem;
+        height: 2.5rem;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 1rem;
+        font-size: 1.2rem;
+        box-shadow: 0 4px 12px rgba(255, 217, 61, 0.5);
     }
     
+    /* ===== BUTTONS ===== */
+    .stButton>button {
+        width: 100%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    }
+    
+    .stButton>button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+    }
+    
+    .stButton>button:active {
+        transform: translateY(0);
+    }
+    
+    /* ===== INPUT FIELDS ===== */
+    .stTextInput>div>div>input,
+    .stTextArea>div>div>textarea {
+        background-color: rgba(45, 55, 72, 0.8);
+        color: white;
+        border: 2px solid rgba(102, 126, 234, 0.3);
+        border-radius: 12px;
+        padding: 0.75rem;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .stTextInput>div>div>input:focus,
+    .stTextArea>div>div>textarea:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+        outline: none;
+    }
+    
+    /* ===== SELECT BOX ===== */
+    .stSelectbox>div>div>div {
+        background-color: rgba(45, 55, 72, 0.8);
+        color: white;
+        border: 2px solid rgba(102, 126, 234, 0.3);
+        border-radius: 12px;
+        transition: all 0.3s ease;
+    }
+    
+    .stSelectbox>div>div>div:hover {
+        border-color: #667eea;
+    }
+    
+    /* ===== FILE UPLOADER ===== */
+    [data-testid="stFileUploader"] {
+        background: linear-gradient(135deg, rgba(45, 55, 72, 0.6), rgba(26, 32, 44, 0.6));
+        border: 2px dashed rgba(102, 126, 234, 0.5);
+        border-radius: 15px;
+        padding: 2rem;
+        transition: all 0.3s ease;
+    }
+    
+    [data-testid="stFileUploader"]:hover {
+        border-color: #667eea;
+        background: linear-gradient(135deg, rgba(45, 55, 72, 0.8), rgba(26, 32, 44, 0.8));
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+    }
+    
+    /* ===== SPINNER ===== */
+    .stSpinner>div {
+        border-top-color: #667eea !important;
+        border-right-color: #764ba2 !important;
+    }
+    
+    /* ===== SUCCESS/ERROR MESSAGES ===== */
+    .stSuccess {
+        background: linear-gradient(135deg, #48bb78, #38a169);
+        color: white;
+        padding: 1rem;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(72, 187, 120, 0.4);
+        animation: slideIn 0.3s ease-out;
+    }
+    
+    .stError {
+        background: linear-gradient(135deg, #f56565, #e53e3e);
+        color: white;
+        padding: 1rem;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(245, 101, 101, 0.4);
+        animation: slideIn 0.3s ease-out;
+    }
+    
+    /* ===== EXPANDER ===== */
+    .streamlit-expanderHeader {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.2), rgba(118, 75, 162, 0.2));
+        border-radius: 10px;
+        font-weight: 600;
+        color: #ffd93d;
+        transition: all 0.3s ease;
+    }
+    
+    .streamlit-expanderHeader:hover {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.3), rgba(118, 75, 162, 0.3));
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+    
+    /* ===== SCROLLBAR ===== */
+    ::-webkit-scrollbar {
+        width: 12px;
+        height: 12px;
+    }
+    
+    ::-webkit-scrollbar-track {
+        background: #1a202c;
+        border-radius: 10px;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        border-radius: 10px;
+        border: 2px solid #1a202c;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient(135deg, #764ba2, #667eea);
+    }
+    
+    /* ===== LOADING ANIMATION ===== */
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+    }
+    
+    .loading {
+        animation: pulse 1.5s ease-in-out infinite;
+    }
+    
+    /* ===== INFO BOX ===== */
+    .info-box {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.2), rgba(118, 75, 162, 0.2));
+        border-left: 4px solid #667eea;
+        padding: 1.5rem;
+        border-radius: 10px;
+        margin: 1rem 0;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+    }
+    
+    /* ===== METRICS ===== */
+    [data-testid="stMetricValue"] {
+        font-size: 2rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    /* ===== RESPONSIVE DESIGN ===== */
+    @media (max-width: 768px) {
+        .main-header {
+            font-size: 2rem;
+            padding: 1.5rem 1rem;
+        }
+        
+        .chat-message {
+            max-width: 90%;
+            padding: 1rem;
+        }
+        
+        .user-message::before,
+        .bot-message::before {
+            width: 2rem;
+            height: 2rem;
+            font-size: 1rem;
+        }
+    }
+    
+    /* ===== MESSAGE CONTENT ===== */
     .message-content {
         margin-left: 0.5rem;
         font-weight: 500;
     }
     
+    /* ===== SOURCE CARD ===== */
     .source-card {
         background: linear-gradient(135deg, #4facfe, #00f2fe);
         color: white;
@@ -115,105 +366,58 @@ st.markdown("""
         margin: 0.8rem 0;
         font-size: 0.9rem;
         box-shadow: 0 3px 10px rgba(79, 172, 254, 0.3);
+        transition: all 0.3s ease;
     }
     
-    /* ปรับแต่ง expander */
-    .streamlit-expander {
-        background-color: #2d3748 !important;
-        border: 1px solid #4a5568 !important;
-        border-radius: 10px !important;
-        margin: 0.5rem 0 !important;
+    .source-card:hover {
+        transform: translateX(5px);
+        box-shadow: 0 5px 15px rgba(79, 172, 254, 0.5);
     }
     
-    .streamlit-expander > div > div > div > div > p {
-        color: #e2e8f0 !important;
-        font-weight: 500 !important;
-        margin: 0 !important;
-    }
-    
-    .streamlit-expander[data-testid="stExpander"][aria-expanded="true"] {
-        background-color: #2d3748 !important;
-    }
-    
-    /* ปรับแต่งหัวข้อ expander */
-    details summary {
-        background-color: #4a5568 !important;
-        color: #e2e8f0 !important;
-        padding: 0.8rem !important;
-        border-radius: 8px !important;
-        cursor: pointer !important;
-        font-weight: 500 !important;
-    }
-    
-    details summary:hover {
-        background-color: #5a6578 !important;
-    }
-    
-    details[open] summary {
-        border-bottom-left-radius: 0 !important;
-        border-bottom-right-radius: 0 !important;
-        border-bottom: 1px solid #4a5568 !important;
-    }
-    
+    /* ===== STATS CARD ===== */
     .stats-card {
         background: linear-gradient(135deg, #667eea, #764ba2);
         color: white;
-        padding: 1.2rem;
-        border-radius: 12px;
+        padding: 1.5rem;
+        border-radius: 15px;
         margin: 0.8rem 0;
         box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        transition: all 0.3s ease;
+    }
+    
+    .stats-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+    }
+    
+    /* ===== CHAT INPUT CONTAINER ===== */
+    .stChatInputContainer,
+    .chat-input-container {
+        background: linear-gradient(135deg, rgba(45, 55, 72, 0.6), rgba(26, 32, 44, 0.6));
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin: 1rem 0;
+        border: 2px solid rgba(102, 126, 234, 0.3);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
     }
     
     .chat-input {
-        background-color: #4a5568;
+        background-color: rgba(74, 85, 104, 0.8);
         border: 2px solid #718096;
         border-radius: 25px;
         color: white;
         padding: 0.8rem 1.5rem;
+        transition: all 0.3s ease;
     }
     
     .chat-input::placeholder {
         color: #a0aec0;
     }
     
-    /* Dark theme สำหรับ chat container */
-    .stChatInputContainer {
-        background-color: #2d3748;
-        border-radius: 15px;
-        padding: 1rem;
-    }
-    
-    .chat-input-container {
-        background-color: #2d3748;
-        border-radius: 15px;
-        padding: 1.5rem;
-        margin: 1rem 0;
-        border: 1px solid #4a5568;
-    }
-    
-    /* ปรับแต่ง text area */
-    .stTextArea > div > div > textarea {
-        background-color: #4a5568 !important;
-        color: white !important;
-        border: 2px solid #718096 !important;
-        border-radius: 10px !important;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
-    }
-    
-    .stTextArea > div > div > textarea::placeholder {
-        color: #a0aec0 !important;
-    }
-    
-    /* ปรับแต่งปุ่ม */
-    .stButton > button {
-        border-radius: 20px !important;
-        font-weight: 600 !important;
-        transition: all 0.3s ease !important;
-    }
-    
-    .stButton > button:hover {
-        transform: translateY(-2px) !important;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+    .chat-input:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+        outline: none;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -262,7 +466,16 @@ def clean_html_content(text: str) -> str:
 
 def setup_sidebar():
     """ตั้งค่า Sidebar"""
-    st.sidebar.title("⚙️ การตั้งค่า")
+    st.sidebar.markdown("""
+    <div style="background: linear-gradient(135deg, #667eea, #764ba2); 
+                padding: 1.5rem; border-radius: 15px; margin-bottom: 1.5rem; 
+                text-align: center; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);">
+        <h2 style="color: white; margin: 0; font-size: 1.8rem;">⚙️ การตั้งค่า</h2>
+        <p style="color: rgba(255, 255, 255, 0.9); margin: 0.5rem 0 0 0; font-size: 0.9rem;">
+            ปรับแต่งระบบตามความต้องการ
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
     
     # การตั้งค่าโมเดล
     st.sidebar.subheader("🤖 การตั้งค่าโมเดล")
@@ -318,7 +531,7 @@ def setup_sidebar():
         "Chunk Size (ขนาดแต่ละส่วน)",
         min_value=200,
         max_value=2000,
-        value=1000,
+        value=1500,  # เพิ่มเป็น 1500 เพื่อรองรับตารางใหญ่
         step=100,
         help="ขนาดของแต่ละส่วนข้อความ (characters) - ค่าใหญ่ = บริบทมากขึ้น แต่ใช้เวลานานขึ้น"
     )
@@ -327,9 +540,9 @@ def setup_sidebar():
         "Chunk Overlap (ส่วนซ้อนทับ)",
         min_value=0,
         max_value=min(500, chunk_size//2),
-        value=min(200, chunk_size//5),
+        value=min(400, chunk_size//3),  # เพิ่ม overlap เป็น 400 (27%)
         step=50,
-        help="ส่วนที่ซ้อนทับระหว่างส่วนข้อความ (characters) - ช่วยรักษาบริบทต่อเนื่อง"
+        help="ส่วนที่ซ้อนทับระหว่างส่วนข้อความ (characters) - ช่วยรักษาบริบทต่อเนื่อง และป้องกันตารางถูกตัดครึ่ง"
     )
     
     # คำนวณจำนวน chunks โดยประมาณ
@@ -424,29 +637,63 @@ def display_system_stats():
 
 def upload_documents():
     """ส่วนการอัพโหลดเอกสาร"""
-    st.subheader("📁 อัพโหลดเอกสาร")
+    st.markdown("""
+    <div style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1)); 
+                border-radius: 15px; padding: 1.5rem; margin-bottom: 2rem; 
+                border: 1px solid rgba(102, 126, 234, 0.3);">
+        <h3 style="color: #ffd93d; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+            <span>📁</span>
+            <span>อัพโหลดและประมวลผลเอกสาร</span>
+        </h3>
+        <p style="color: #a0aec0; margin: 0; font-size: 1rem;">
+            อัพโหลดเอกสารของคุณเพื่อเริ่มการสนทนา รองรับไฟล์ PDF, DOCX, TXT และอื่นๆ
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
     
     # ตรวจสอบว่าตั้งค่าระบบแล้วหรือยัง
     if not st.session_state.system_ready or not st.session_state.document_processor:
-        st.warning("⚠️ กรุณาตั้งค่าระบบและเลือก Chunk Size, Chunk Overlap ใน Sidebar ก่อน")
+        st.markdown("""
+        <div style="background: linear-gradient(135deg, rgba(255, 193, 7, 0.2), rgba(255, 152, 0, 0.2)); 
+                    border-radius: 12px; padding: 1.5rem; border-left: 4px solid #ffd93d;">
+            <p style="color: #ffe66d; margin: 0; font-size: 1.1rem; font-weight: 600;">
+                ⚠️ กรุณาตั้งค่าระบบและเลือก Chunk Size, Chunk Overlap ใน Sidebar ก่อน
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
         return
     
     # แสดงการตั้งค่าปัจจุบัน
-    st.info(f"""
-    **การตั้งค่าการประมวลผลปัจจุบัน:**
-    - Chunk Size: {st.session_state.document_processor.chunk_size} characters
-    - Chunk Overlap: {st.session_state.document_processor.chunk_overlap} characters
-    """)
+    st.markdown(f"""
+    <div class="info-box">
+        <h4 style="color: #ffd93d; margin-bottom: 0.5rem;">⚙️ การตั้งค่าการประมวลผลปัจจุบัน</h4>
+        <p style="color: #a0aec0; margin: 0;">
+            📏 <strong>Chunk Size:</strong> {st.session_state.document_processor.chunk_size} characters<br>
+            🔗 <strong>Chunk Overlap:</strong> {st.session_state.document_processor.chunk_overlap} characters
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
     
     uploaded_files = st.file_uploader(
-        "เลือกไฟล์เอกสาร",
+        "📎 เลือกไฟล์เอกสารของคุณ",
         type=['txt', 'pdf', 'docx', 'doc', 'pptx'],
         accept_multiple_files=True,
-        help="รองรับไฟล์ .txt, .pdf, .docx, .pptx"
+        help="รองรับไฟล์ .txt, .pdf, .docx, .pptx | สามารถเลือกหลายไฟล์พร้อมกันได้"
     )
     
-    if uploaded_files and st.button("📤 ประมวลผลเอกสาร"):
-        process_uploaded_files(uploaded_files)
+    if uploaded_files:
+        st.markdown(f"""
+        <div style="background: linear-gradient(135deg, rgba(72, 187, 120, 0.2), rgba(56, 161, 105, 0.2)); 
+                    border-radius: 10px; padding: 1rem; margin: 1rem 0; border-left: 4px solid #48bb78;">
+            <p style="color: #9ae6b4; margin: 0;">
+                ✅ <strong>เลือกไฟล์แล้ว {len(uploaded_files)} ไฟล์</strong><br>
+                <small>กดปุ่ม "ประมวลผลเอกสาร" เพื่อเริ่มต้น</small>
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        if st.button("📤 ประมวลผลเอกสาร", type="primary", use_container_width=True):
+            process_uploaded_files(uploaded_files)
 
 
 def process_uploaded_files(uploaded_files):
@@ -512,10 +759,29 @@ def process_uploaded_files(uploaded_files):
 
 def chat_interface():
     """ส่วนการสนทนา"""
-    st.subheader("💬 สนทนากับเอกสาร")
+    st.markdown("""
+    <div style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1)); 
+                border-radius: 15px; padding: 1.5rem; margin-bottom: 2rem; 
+                border: 1px solid rgba(102, 126, 234, 0.3);">
+        <h3 style="color: #ffd93d; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+            <span>💬</span>
+            <span>สนทนากับเอกสารของคุณ</span>
+        </h3>
+        <p style="color: #a0aec0; margin: 0; font-size: 1rem;">
+            ถามคำถามเกี่ยวกับเอกสารที่คุณอัพโหลด และระบบจะตอบด้วยข้อมูลจากเอกสารพร้อมแหล่งอ้างอิง
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
     
     if not st.session_state.system_ready:
-        st.warning("⚠️ กรุณาตั้งค่าระบบและอัพโหลดเอกสารก่อน")
+        st.markdown("""
+        <div style="background: linear-gradient(135deg, rgba(245, 101, 101, 0.2), rgba(229, 62, 62, 0.2)); 
+                    border-radius: 12px; padding: 1.5rem; border-left: 4px solid #f56565;">
+            <p style="color: #fc8181; margin: 0; font-size: 1.1rem; font-weight: 600;">
+                ⚠️ กรุณาตั้งค่าระบบและอัพโหลดเอกสารก่อนเริ่มการสนทนา
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
         return
     
     # แสดงประวัติการสนทนาใน chat container สวยๆ
@@ -635,11 +901,37 @@ def clear_all_data():
 
 def main():
     """ฟังก์ชันหลัก"""
-    # Header
-    st.markdown('<h1 class="main-header">🤖 Thai RAG Chatbot</h1>', unsafe_allow_html=True)
+    # Enhanced Header with Animation
+    st.markdown('''
+    <h1 class="main-header">
+        <span style="position: relative; z-index: 1;">
+            🤖 Thai RAG Chatbot
+        </span>
+    </h1>
+    ''', unsafe_allow_html=True)
+    
     st.markdown("""
-    <div style="text-align: center; margin-bottom: 2rem; color: #666;">
-        ระบบ RAG Chatbot สำหรับเอกสารภาษาไทย | ใช้ Local LLM และ Embedding Models
+    <div style="text-align: center; margin-bottom: 2.5rem;">
+        <p style="font-size: 1.2rem; color: #a0aec0; font-weight: 300; margin-bottom: 0.5rem;">
+            ระบบ RAG Chatbot สำหรับเอกสารภาษาไทย
+        </p>
+        <p style="font-size: 1rem; color: #718096; font-weight: 300;">
+            <span style="background: linear-gradient(135deg, #667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 600;">
+                Powered by
+            </span> 
+            Local LLM ⚡ Ollama 🚀 LangChain 🎯 FAISS
+        </p>
+        <div style="margin-top: 1rem; display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap;">
+            <span style="background: linear-gradient(135deg, #667eea20, #764ba220); padding: 0.5rem 1rem; border-radius: 20px; color: #ffd93d; font-size: 0.9rem; border: 1px solid #667eea40;">
+                ✨ Thai Language Support
+            </span>
+            <span style="background: linear-gradient(135deg, #667eea20, #764ba220); padding: 0.5rem 1rem; border-radius: 20px; color: #ffd93d; font-size: 0.9rem; border: 1px solid #667eea40;">
+                🔒 Private & Secure
+            </span>
+            <span style="background: linear-gradient(135deg, #667eea20, #764ba220); padding: 0.5rem 1rem; border-radius: 20px; color: #ffd93d; font-size: 0.9rem; border: 1px solid #667eea40;">
+                ⚡ Fast & Accurate
+            </span>
+        </div>
     </div>
     """, unsafe_allow_html=True)
     
@@ -649,17 +941,76 @@ def main():
     # Sidebar
     setup_sidebar()
     
-    # เนื้อหาหลัก
+    # เนื้อหาหลักด้วย Tabs สวยงาม
+    st.markdown("""
+    <style>
+        .stTabs [data-baseweb="tab-list"] {
+            gap: 24px;
+            background: linear-gradient(135deg, rgba(45, 55, 72, 0.6), rgba(26, 32, 44, 0.6));
+            padding: 1rem;
+            border-radius: 15px;
+        }
+        
+        .stTabs [data-baseweb="tab"] {
+            height: 50px;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.2), rgba(118, 75, 162, 0.2));
+            border-radius: 10px;
+            color: white;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .stTabs [aria-selected="true"] {
+            background: linear-gradient(135deg, #667eea, #764ba2) !important;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.5);
+            transform: translateY(-2px);
+        }
+        
+        .stTabs [data-baseweb="tab"]:hover {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.4), rgba(118, 75, 162, 0.4));
+            transform: translateY(-2px);
+        }
+    </style>
+    """, unsafe_allow_html=True)
+    
     tab1, tab2, tab3 = st.tabs(["📁 อัพโหลดเอกสาร", "💬 สนทนา", "ℹ️ ข้อมูลระบบ"])
     
     with tab1:
         upload_documents()
         
-        # แสดงไฟล์ที่ประมวลผลแล้ว
+        # แสดงไฟล์ที่ประมวลผลแล้วในรูปแบบสวยงาม
         if st.session_state.processed_files:
-            st.subheader("📋 ไฟล์ที่ประมวลผลแล้ว")
-            for file_info in st.session_state.processed_files:
-                st.markdown(f"- **{file_info['filename']}** ({file_info['chunks']} chunks)")
+            st.markdown("""
+            <div style="margin-top: 2rem;">
+                <h3 style="color: #ffd93d; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                    <span>📋</span>
+                    <span>ไฟล์ที่ประมวลผลแล้ว</span>
+                </h3>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            for i, file_info in enumerate(st.session_state.processed_files, 1):
+                st.markdown(f"""
+                <div style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.15), rgba(118, 75, 162, 0.15)); 
+                            border-radius: 12px; padding: 1.2rem; margin: 0.8rem 0; 
+                            border-left: 4px solid #667eea; transition: all 0.3s ease;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <p style="color: #ffd93d; margin: 0; font-size: 1.1rem; font-weight: 600;">
+                                📄 {file_info['filename']}
+                            </p>
+                            <p style="color: #a0aec0; margin: 0.3rem 0 0 0; font-size: 0.9rem;">
+                                🧩 {file_info['chunks']} chunks | 📦 ประมวลผลเสร็จสิ้น
+                            </p>
+                        </div>
+                        <div style="background: linear-gradient(135deg, #667eea, #764ba2); 
+                                    padding: 0.5rem 1rem; border-radius: 20px; color: white; 
+                                    font-weight: 600; font-size: 0.9rem;">
+                            #{i}
+                        </div>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
     
     with tab2:
         chat_interface()
