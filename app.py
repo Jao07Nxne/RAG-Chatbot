@@ -905,7 +905,7 @@ def main():
     st.markdown('''
     <h1 class="main-header">
         <span style="position: relative; z-index: 1;">
-            🤖 Thai RAG Chatbot
+            🤖 CS RAG Chatbot
         </span>
     </h1>
     ''', unsafe_allow_html=True)
