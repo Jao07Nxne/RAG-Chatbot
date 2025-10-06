@@ -509,10 +509,10 @@ def setup_sidebar():
     max_tokens = st.sidebar.slider(
         "Max Tokens",
         min_value=512,
-        max_value=4096,
-        value=2048,
-        step=256,
-        help="จำนวนคำสูงสุดในการตอบ"
+        max_value=8192,  # เพิ่มเป็น 8192 รองรับคำตอบยาว
+        value=4096,      # ตั้งค่า default สูงๆ
+        step=512,
+        help="จำนวน tokens สูงสุดในการตอบ (ไม่ใช่จำนวนขั้นต่ำ - LLM จะตอบสั้นตามความเหมาะสม)"
     )
     
     st.sidebar.divider()
@@ -520,39 +520,67 @@ def setup_sidebar():
     # การตั้งค่าการประมวลผลเอกสาร
     st.sidebar.subheader("📄 การตั้งค่าเอกสาร")
     
-    st.sidebar.markdown("""
-    **คำแนะนำการตั้งค่า:**
-    - **Chunk Size เล็ก (200-500)**: เหมาะกับคำถามเฉพาะเจาะจง
-    - **Chunk Size กลาง (800-1200)**: สมดุลระหว่างความแม่นยำและบริบท
-    - **Chunk Size ใหญ่ (1500-2000)**: เหมาะกับคำถามที่ต้องการบริบทมาก
-    """)
-    
-    chunk_size = st.sidebar.slider(
-        "Chunk Size (ขนาดแต่ละส่วน)",
-        min_value=200,
-        max_value=2000,
-        value=1500,  # เพิ่มเป็น 1500 เพื่อรองรับตารางใหญ่
-        step=100,
-        help="ขนาดของแต่ละส่วนข้อความ (characters) - ค่าใหญ่ = บริบทมากขึ้น แต่ใช้เวลานานขึ้น"
+    # Dynamic Chunking Toggle
+    use_dynamic_chunking = st.sidebar.checkbox(
+        "✨ ใช้ Dynamic Chunking",
+        value=True,  # เปิดโดย default
+        help="แบ่ง chunks ตามประเภทเนื้อหา (ตาราง=3000, ทั่วไป=1000) - แนะนำเปิด!"
     )
     
-    chunk_overlap = st.sidebar.slider(
-        "Chunk Overlap (ส่วนซ้อนทับ)",
-        min_value=0,
-        max_value=min(500, chunk_size//2),
-        value=min(400, chunk_size//3),  # เพิ่ม overlap เป็น 400 (27%)
-        step=50,
-        help="ส่วนที่ซ้อนทับระหว่างส่วนข้อความ (characters) - ช่วยรักษาบริบทต่อเนื่อง และป้องกันตารางถูกตัดครึ่ง"
-    )
-    
-    # คำนวณจำนวน chunks โดยประมาณ
-    if chunk_size > 0:
-        estimated_chunks_per_1000_chars = max(1, int(1000 / (chunk_size - chunk_overlap)))
-        st.sidebar.caption(f"ประมาณ {estimated_chunks_per_1000_chars} chunks ต่อ 1,000 ตัวอักษร")
+    if use_dynamic_chunking:
+        st.sidebar.success("""
+        **Dynamic Chunking เปิดอยู่** ✅
+        - 📊 ตารางรายวิชา: 3000 chars
+        - 📋 คำอธิบายรายวิชา: 1500 chars
+        - 📝 เนื้อหาทั่วไป: 1000 chars
+        """)
+        # ปิด manual chunk settings
+        chunk_size = None
+        chunk_overlap = None
+    else:
+        st.sidebar.warning("**Manual Chunking** - ตั้งค่าเอง")
+        
+        st.sidebar.markdown("""
+        **คำแนะนำการตั้งค่า:**
+        - **Chunk Size เล็ก (500-1000)**: เหมาะกับคำถามเฉพาะเจาะจง
+        - **Chunk Size กลาง (1000-2000)**: สมดุลระหว่างความแม่นยำและบริบท
+        - **Chunk Size ใหญ่ (2000-3000)**: เหมาะกับตารางและบริบทมาก
+        """)
+        
+        chunk_size = st.sidebar.slider(
+            "Chunk Size (ขนาดแต่ละส่วน)",
+            min_value=500,
+            max_value=3000,  # เพิ่มเป็น 3000
+            value=1500,
+            step=100,
+            help="ขนาดของแต่ละส่วนข้อความ (characters)"
+        )
+        
+        chunk_overlap = st.sidebar.slider(
+            "Chunk Overlap (ส่วนซ้อนทับ)",
+            min_value=100,
+            max_value=min(600, chunk_size//2),
+            value=min(400, chunk_size//3),
+            step=50,
+            help="ส่วนที่ซ้อนทับระหว่างส่วนข้อความ (characters)"
+        )
+        
+        # คำนวณจำนวน chunks โดยประมาณ
+        if chunk_size > 0:
+            estimated_chunks_per_1000_chars = max(1, int(1000 / (chunk_size - chunk_overlap)))
+            st.sidebar.caption(f"ประมาณ {estimated_chunks_per_1000_chars} chunks ต่อ 1000 ตัวอักษร")
     
     # ปุ่มตั้งค่าระบบ
     if st.sidebar.button("🔧 ตั้งค่าระบบ"):
-        setup_system(embedding_model, llm_model, temperature, max_tokens, chunk_size, chunk_overlap)
+        setup_system(
+            embedding_model=embedding_model,
+            llm_model=llm_model,
+            temperature=temperature,
+            max_tokens=max_tokens,
+            chunk_size=chunk_size,
+            chunk_overlap=chunk_overlap,
+            use_dynamic_chunking=use_dynamic_chunking
+        )
     
     st.sidebar.divider()
     
@@ -569,15 +597,31 @@ def setup_sidebar():
         clear_chat_history()
 
 
-def setup_system(embedding_model: str, llm_model: str, temperature: float, max_tokens: int, chunk_size: int, chunk_overlap: int):
-    """ตั้งค่าระบบ"""
+def setup_system(
+    embedding_model: str, 
+    llm_model: str, 
+    temperature: float, 
+    max_tokens: int, 
+    chunk_size: int = None, 
+    chunk_overlap: int = None,
+    use_dynamic_chunking: bool = True
+):
+    """ตั้งค่าระบบ พร้อม Dynamic Chunking"""
     with st.spinner("กำลังตั้งค่าระบบ..."):
         try:
-            # สร้าง Document Processor ด้วยค่าที่ผู้ใช้เลือก
-            st.session_state.document_processor = ThaiDocumentProcessor(
-                chunk_size=chunk_size,
-                chunk_overlap=chunk_overlap
-            )
+            # สร้าง Document Processor
+            if use_dynamic_chunking:
+                st.info("✨ ใช้ Dynamic Chunking Strategy")
+                st.session_state.document_processor = ThaiDocumentProcessor(
+                    use_dynamic_chunking=True
+                )
+            else:
+                st.info(f"📝 ใช้ Manual Chunking ({chunk_size}/{chunk_overlap})")
+                st.session_state.document_processor = ThaiDocumentProcessor(
+                    chunk_size=chunk_size,
+                    chunk_overlap=chunk_overlap,
+                    use_dynamic_chunking=False
+                )
             
             # สร้าง Vector Store Manager
             st.session_state.vector_store_manager = ThaiVectorStoreManager(
@@ -602,6 +646,8 @@ def setup_system(embedding_model: str, llm_model: str, temperature: float, max_t
             
         except Exception as e:
             st.error(f"❌ เกิดข้อผิดพลาดในการตั้งค่าระบบ: {str(e)}")
+            import traceback
+            st.error(traceback.format_exc())
 
 
 def display_system_stats():
@@ -610,11 +656,19 @@ def display_system_stats():
     
     # แสดงค่าปัจจุบันของ chunk settings
     if st.session_state.document_processor:
-        st.sidebar.info(f"""
-        **การตั้งค่าปัจจุบัน:**
-        - Chunk Size: {st.session_state.document_processor.chunk_size} characters
-        - Chunk Overlap: {st.session_state.document_processor.chunk_overlap} characters
-        """)
+        if st.session_state.document_processor.use_dynamic_chunking:
+            st.sidebar.success("""
+            **Dynamic Chunking เปิดอยู่** ✅
+            - 📊 ตาราง: 3000/500
+            - 📋 คำอธิบาย: 1500/300  
+            - 📝 ทั่วไป: 1000/200
+            """)
+        else:
+            st.sidebar.info(f"""
+            **Manual Chunking:**
+            - Chunk Size: {st.session_state.document_processor.chunk_size}
+            - Overlap: {st.session_state.document_processor.chunk_overlap}
+            """)
     
     if st.session_state.rag_system:
         stats = st.session_state.rag_system.get_system_stats()

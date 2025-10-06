@@ -1,6 +1,7 @@
 """
 Document Processor for Thai RAG Chatbot
 รองรับการอ่านและประมวลผลเอกสารภาษาไทย
+รองรับ Dynamic Chunking Strategy
 """
 
 import os
@@ -23,42 +24,56 @@ from pythainlp.corpus.common import thai_words
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.schema import Document as LangChainDocument
 
+# Dynamic Chunking
+from dynamic_text_splitter import DynamicTextSplitter
+from content_classifier import ContentType
+
 
 class ThaiDocumentProcessor:
-    """คลาสสำหรับประมวลผลเอกสารภาษาไทย"""
+    """คลาสสำหรับประมวลผลเอกสารภาษาไทย พร้อม Dynamic Chunking"""
     
-    def __init__(self, chunk_size: int = 1000, chunk_overlap: int = 200):
+    def __init__(self, chunk_size: int = 1000, chunk_overlap: int = 200, use_dynamic_chunking: bool = True):
         """
         Args:
-            chunk_size: ขนาดของแต่ละ chunk (characters)
-            chunk_overlap: ส่วนที่ซ้อนทับระหว่าง chunks
+            chunk_size: ขนาดของแต่ละ chunk (characters) - ใช้เมื่อ use_dynamic_chunking=False
+            chunk_overlap: ส่วนที่ซ้อนทับระหว่าง chunks - ใช้เมื่อ use_dynamic_chunking=False
+            use_dynamic_chunking: ใช้ Dynamic Chunking Strategy หรือไม่ (แนะนำ True)
         """
         self.chunk_size = chunk_size
         self.chunk_overlap = chunk_overlap
+        self.use_dynamic_chunking = use_dynamic_chunking
         
-        # สร้าง text splitter ที่เหมาะกับภาษาไทย
-        self.text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=chunk_size,
-            chunk_overlap=chunk_overlap,
-            length_function=len,
-            separators=[
-                "\n\n3.1.4",   # 🔥 จับ section "แผนการศึกษา" ให้แยก chunk
-                "\n\n3.1.5",   # จับ section ถัดไป
-                "\n\nปีที่ ",   # จับหัวข้อปี (เช่น "ปีที่ 1", "ปีที่ 2")
-                "\n\nภาคการศึกษาที่ ",  # จับหัวข้อภาค
-                "\n\n\n",      # Multiple paragraph breaks
-                "\n\n",        # Paragraph breaks
-                "\n",          # Line breaks
-                "。",          # Full stop (Thai/Asian)
-                ".",           # Sentence endings
-                "!",           # Exclamation
-                "?",           # Question
-                ";",           # Semicolon
-                ",",           # Comma
-                " ",           # Spaces
-                ""             # Characters (ใช้เมื่อจำเป็น)
-            ]
-        )
+        if use_dynamic_chunking:
+            # ใช้ Dynamic Text Splitter (แนะนำ!)
+            print("✨ เปิดใช้งาน Dynamic Chunking Strategy")
+            self.dynamic_splitter = DynamicTextSplitter()
+            self.text_splitter = None  # ไม่ใช้ fixed splitter
+        else:
+            # ใช้ Fixed Text Splitter (แบบเดิม)
+            print(f"⚠️ ใช้ Fixed Chunking ({chunk_size}/{chunk_overlap})")
+            self.dynamic_splitter = None
+            self.text_splitter = RecursiveCharacterTextSplitter(
+                chunk_size=chunk_size,
+                chunk_overlap=chunk_overlap,
+                length_function=len,
+                separators=[
+                    "\n\n3.1.4",   # 🔥 จับ section "แผนการศึกษา" ให้แยก chunk
+                    "\n\n3.1.5",   # จับ section ถัดไป
+                    "\n\nปีที่ ",   # จับหัวข้อปี (เช่น "ปีที่ 1", "ปีที่ 2")
+                    "\n\nภาคการศึกษาที่ ",  # จับหัวข้อภาค
+                    "\n\n\n",      # Multiple paragraph breaks
+                    "\n\n",        # Paragraph breaks
+                    "\n",          # Line breaks
+                    "。",          # Full stop (Thai/Asian)
+                    ".",           # Sentence endings
+                    "!",           # Exclamation
+                    "?",           # Question
+                    ";",           # Semicolon
+                    ",",           # Comma
+                    " ",           # Spaces
+                    ""             # Characters (ใช้เมื่อจำเป็น)
+                ]
+            )
     
     def detect_encoding(self, file_path: str) -> str:
         """ตัวอย่างการตรวจสอบ encoding ของไฟล์"""
@@ -247,7 +262,7 @@ class ThaiDocumentProcessor:
     
     def process_document(self, file_path: str, metadata: Dict[str, Any] = None) -> List[LangChainDocument]:
         """
-        ประมวลผลเอกสารและแบ่งเป็น chunks
+        ประมวลผลเอกสารและแบ่งเป็น chunks (รองรับ Dynamic Chunking)
         
         Args:
             file_path: เส้นทางไฟล์
@@ -263,10 +278,19 @@ class ThaiDocumentProcessor:
         processed_text = self.preprocess_text(text)
         
         if not processed_text.strip():
-            raise ValueError(f"ไม่มีข้อความในไฟล์ {file_path}")
+            print("⚠️ ไม่พบข้อความในเอกสาร")
+            return []
         
-        # แบ่งเป็น chunks
-        chunks = self.text_splitter.split_text(processed_text)
+        # แบ่ง chunks ตาม strategy
+        if self.use_dynamic_chunking:
+            # ใช้ Dynamic Chunking
+            print("\n🎯 เริ่มแบ่ง chunks ด้วย Dynamic Strategy...")
+            chunks, content_type = self.dynamic_splitter.split_text(processed_text)
+        else:
+            # ใช้ Fixed Chunking (แบบเดิม)
+            print(f"\n📝 เริ่มแบ่ง chunks (Fixed: {self.chunk_size}/{self.chunk_overlap})...")
+            chunks = self.text_splitter.split_text(processed_text)
+            content_type = "general"  # Default
         
         # สร้าง LangChain Documents พร้อม metadata ที่ช่วยในการค้นหา
         documents = []
@@ -280,6 +304,10 @@ class ThaiDocumentProcessor:
         
         if metadata:
             base_metadata.update(metadata)
+        
+        # เพิ่ม content_type ถ้าใช้ Dynamic Chunking
+        if self.use_dynamic_chunking:
+            base_metadata["content_type"] = content_type
         
         for i, chunk in enumerate(chunks):
             chunk_metadata = base_metadata.copy()
@@ -327,7 +355,18 @@ class ThaiDocumentProcessor:
                 if semester_found:
                     chunk_metadata["semester"] = semester_found
                     chunk_metadata["is_curriculum_table"] = "yes"
-                    print(f"🎯 พบตารางหลักสูตร: ปี {year_found} ภาค {semester_found} ใน chunk {i}")
+                    
+                    # นับจำนวนวิชาในตาราง
+                    if course_codes:
+                        chunk_metadata["course_count"] = len(course_codes)
+                    
+                    # ดึงจำนวนหน่วยกิตรวม
+                    total_match = re.search(r'รวม\s+(\d+)\s+หน่วยกิต', chunk)
+                    if total_match:
+                        chunk_metadata["total_credits"] = total_match.group(1)
+                    
+                    print(f"   🎯 พบตารางหลักสูตร: ปี {year_found} ภาค {semester_found} "
+                          f"({len(course_codes)} วิชา) ใน chunk {i}")
             elif semester_found:
                 chunk_metadata["semester"] = semester_found
             
@@ -343,6 +382,8 @@ class ThaiDocumentProcessor:
                 page_content=chunk,
                 metadata=chunk_metadata
             ))
+        
+        print(f"✅ แบ่ง chunks เสร็จสิ้น: {len(documents)} chunks")
         
         return documents
     
